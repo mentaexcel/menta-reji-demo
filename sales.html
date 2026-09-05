@@ -52,6 +52,7 @@
 
 <p style="font-size:11px;color:#888;">
 ※本画面の一覧はCSV出力に対応しておりません。データが必要な場合は本部システム課へ依頼票をご提出ください。<br>
+※本画面で表示できるのは先頭10ページまでです。それ以降は売上日を絞り込んで検索してください。<br>
 ※返品伝票は数量・金額をマイナスで表示しています。<br>
 ※他支店のデータは本画面では参照できません。
 </p>
@@ -83,15 +84,27 @@ if (ME) {
   document.getElementById('keyword').value = cond.keyword;
   document.getElementById('per').value = per;
 
-  var rows = filterSales(cond, ME.store.code);
+  var MAX_PAGES = 10;                       /* 表示できるのは先頭10ページまで */
+  var all = filterSales(cond, ME.store.code);
+  var limit = per * MAX_PAGES;
+  var over = all.length > limit;            /* 上限を超えたか */
+  var rows = over ? all.slice(0, limit) : all;
   var maxPage = Math.max(1, Math.ceil(rows.length / per));
   if (page > maxPage) page = maxPage;
   var start = (page - 1) * per;
   var view = rows.slice(start, start + per);
 
-  document.getElementById('hit').innerHTML =
-    '検索結果：<b>' + num(rows.length) + '</b> 件中　' + num(start + 1) + ' 〜 ' + num(start + view.length) + ' 件を表示' +
-    '　（全 ' + num(maxPage) + ' ページ中 ' + num(page) + ' ページ目）';
+  var hitHtml = '検索結果：<b>' + num(all.length) + '</b> 件中　' +
+                num(start + 1) + ' 〜 ' + num(start + view.length) + ' 件を表示' +
+                '　（全 ' + num(maxPage) + ' ページ中 ' + num(page) + ' ページ目）';
+  if (over) {
+    hitHtml += '<div style="border:1px solid #d9c98a;background:#fffbe6;color:#a06f00;' +
+               'padding:5px 8px;margin-top:4px;">' +
+               '検索結果が表示上限を超えています。本画面は <b>' + MAX_PAGES + ' ページ（' + num(limit) + ' 件）</b> までしか表示できません。' +
+               '残り ' + num(all.length - limit) + ' 件を確認するには、売上日を絞り込むか表示件数を増やして再検索してください。' +
+               '</div>';
+  }
+  document.getElementById('hit').innerHTML = hitHtml;
 
   function link(p) {
     return 'sales.html?from=' + cond.from + '&to=' + cond.to +
