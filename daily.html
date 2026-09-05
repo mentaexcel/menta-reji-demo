@@ -51,8 +51,8 @@ if (ME) {
   document.getElementById('storecell').innerHTML = storeBadge(ME.store);
 
   var WD = ['日', '月', '火', '水', '木', '金', '土'];
-  var h = '<tr><th>日付</th><th>曜日</th><th>伝票枚数</th><th>客数</th><th>売上金額（税込）</th><th>客単価</th>' +
-          '<th>現金</th><th>クレジット</th><th>QR決済</th><th>電子マネー</th><th>返品</th></tr>';
+  var h = '<thead><tr><th>日付</th><th>曜日</th><th>伝票枚数</th><th>客数</th><th>売上金額（税込）</th><th>客単価</th>' +
+          '<th>現金</th><th>クレジット</th><th>QR決済</th><th>電子マネー</th><th>返品</th></tr></thead><tbody>';
   var T = { c: 0, u: 0, t: 0, pay: {}, hen: 0 };
   for (var i = 0; i < PAYMENTS.length; i++) T.pay[PAYMENTS[i]] = 0;
 
@@ -68,21 +68,22 @@ if (ME) {
       T.u += s.customers; T.t += s.total; T.pay[s.payment] += s.total;
     }
     var dow = new Date(2026, 7, d).getDay();
-    var col = dow === 0 ? ' style="color:#cc0000"' : (dow === 6 ? ' style="color:#0033cc"' : '');
-    h += '<tr' + (d % 2 ? ' class="even"' : '') + '>' +
-         '<td>' + date + '</td><td class="ctr"' + col + '>' + WD[dow] + '</td>' +
-         '<td class="num">' + num(c) + '</td><td class="num">' + num(u) + '</td>' +
-         '<td class="num">' + yen(t) + '</td><td class="num">' + yen(Math.round(t / u)) + '</td>' +
-         '<td class="num">' + yen(pay['現金']) + '</td><td class="num">' + yen(pay['クレジット']) + '</td>' +
-         '<td class="num">' + yen(pay['QR決済']) + '</td><td class="num">' + yen(pay['電子マネー']) + '</td>' +
-         '<td class="num">' + hen + '</td></tr>';
+    var dowCls = dow === 0 ? 'dow-sun' : (dow === 6 ? 'dow-sat' : 'dow-wd');
+    h += '<tr>' +
+         '<td class="col-date">' + date + '</td>' +
+         '<td class="col-dow"><span class="' + dowCls + '">' + WD[dow] + '</span></td>' +
+         '<td class="col-count">' + num(c) + '</td><td class="col-cust">' + num(u) + '</td>' +
+         '<td class="col-amount">' + yen(t) + '</td><td class="col-avg">' + yen(Math.round(t / u)) + '</td>' +
+         '<td class="col-cash">' + yen(pay['現金']) + '</td><td class="col-credit">' + yen(pay['クレジット']) + '</td>' +
+         '<td class="col-qr">' + yen(pay['QR決済']) + '</td><td class="col-emoney">' + yen(pay['電子マネー']) + '</td>' +
+         '<td class="col-return">' + hen + '</td></tr>';
   }
-  h += '<tr><th colspan="2">月計</th>' +
+  h += '</tbody><tfoot><tr><th colspan="2">月計</th>' +
        '<th style="text-align:right">' + num(T.c) + '</th><th style="text-align:right">' + num(T.u) + '</th>' +
        '<th style="text-align:right">' + yen(T.t) + '</th><th style="text-align:right">' + yen(Math.round(T.t / T.u)) + '</th>' +
        '<th style="text-align:right">' + yen(T.pay['現金']) + '</th><th style="text-align:right">' + yen(T.pay['クレジット']) + '</th>' +
        '<th style="text-align:right">' + yen(T.pay['QR決済']) + '</th><th style="text-align:right">' + yen(T.pay['電子マネー']) + '</th>' +
-       '<th style="text-align:right">' + T.hen + '</th></tr>';
+       '<th style="text-align:right">' + T.hen + '</th></tr></tfoot>';
   document.getElementById('list').innerHTML = h;
 }
 </script>

@@ -48,6 +48,7 @@
 <div class="hitnum" id="hit"></div>
 <div class="pager" id="pager1"></div>
 <table class="list" id="list"></table>
+<div id="nodata" style="display:none;padding:16px;text-align:center;color:#888;border:1px solid #c3c9d2;border-top:none;">該当するデータがありません。</div>
 <div class="pager" id="pager2"></div>
 
 <p style="font-size:11px;color:#888;">
@@ -112,54 +113,65 @@ if (ME) {
            '&per=' + per + '&p=' + p;
   }
   /* ページ番号は最大10個まで表示する（現在ページを中心にスライド） */
-  function pagerHtml() {
-    var WIN = 10;
-    var start = Math.max(1, page - Math.floor(WIN / 2));
-    var end = Math.min(maxPage, start + WIN - 1);
-    start = Math.max(1, end - WIN + 1);
-    var h = '';
-    if (page > 1) {
-      h += '<a href="' + link(1) + '">&laquo;先頭</a>';
-      h += '<a href="' + link(page - 1) + '">前へ</a>';
-    }
-    if (start > 1) h += '<span style="margin:0 3px;color:#888">…</span>';
-    for (var i = start; i <= end; i++) {
-      if (i === page) h += '<span class="cur">' + i + '</span>';
-      else h += '<a href="' + link(i) + '">' + i + '</a>';
-    }
-    if (end < maxPage) h += '<span style="margin:0 3px;color:#888">…</span>';
-    if (page < maxPage) {
-      h += '<a href="' + link(page + 1) + '">次へ</a>';
-      h += '<a href="' + link(maxPage) + '">最終&raquo;</a>';
-    }
-    return h;
+  /* ページャーは常に「先頭・前へ・ページ番号・次へ・最終」の5ブロックを出す。
+     使えないときは a ではなく span になるだけで、要素の並びは変わらない。
+     ページ送りの自動化では id（pgFirst / pgPrev / pgNext / pgLast）で拾える。 */
+  function navPart(cls, id, enabled, target, label) {
+    var inner = enabled
+      ? '<a id="' + id + '" href="' + link(target) + '">' + label + '</a>'
+      : '<span class="pgoff">' + label + '</span>';
+    return '<span class="' + cls + '">' + inner + '</span>';
   }
-  document.getElementById('pager1').innerHTML = pagerHtml();
-  document.getElementById('pager2').innerHTML = pagerHtml();
+  function pagerHtml(withIds) {
+    var i2 = function (n) { return withIds ? n : n + 'B'; };
+    var nums = '';
+    for (var i = 1; i <= maxPage; i++) {
+      if (i === page) nums += '<span class="cur">' + i + '</span>';
+      else nums += '<a href="' + link(i) + '">' + i + '</a>';
+    }
+    return navPart('pg-first', i2('pgFirst'), page > 1, 1, '&laquo;先頭') +
+           navPart('pg-prev',  i2('pgPrev'),  page > 1, page - 1, '前へ') +
+           '<span class="pg-nums">' + nums + '</span>' +
+           navPart('pg-next',  i2('pgNext'),  page < maxPage, page + 1, '次へ') +
+           navPart('pg-last',  i2('pgLast'),  page < maxPage, maxPage, '最終&raquo;');
+  }
+  document.getElementById('pager1').innerHTML = pagerHtml(true);
+  document.getElementById('pager2').innerHTML = pagerHtml(false);
 
-  var h = '<tr><th>No.</th><th>伝票番号</th><th>売上日</th><th>時刻</th><th>レジ</th>' +
-          '<th>担当者</th><th>商品</th><th>点数</th><th>支払方法</th><th>金額（税込）</th><th>区分</th><th>&nbsp;</th></tr>';
+  /* 見出しは thead、データは tbody に分ける。
+     データ行は「どの支店でも・何ページ目でも・返品でも」まったく同じ形にする。
+     tr に class は付けない。列の class も固定。返品は区分セルの中身だけが変わる。 */
+  var h = '<thead><tr>' +
+          '<th>No.</th><th>伝票番号</th><th>売上日</th><th>時刻</th><th>レジ</th>' +
+          '<th>担当者</th><th>商品</th><th>点数</th><th>支払方法</th><th>金額（税込）</th><th>区分</th><th>&nbsp;</th>' +
+          '</tr></thead><tbody>';
   for (var i = 0; i < view.length; i++) {
     var s = view[i];
     var qty = 0;
     for (var j = 0; j < s.lines.length; j++) qty += s.lines[j].qty;
-    var cls = (i % 2 ? 'even' : '') + (s.status === '返品' ? ' henpin' : '');
-    h += '<tr class="' + cls + '">' +
-         '<td class="num">' + num(start + i + 1) + '</td>' +
-         '<td>' + s.id + '</td>' +
-         '<td>' + s.date + '</td>' +
-         '<td class="ctr">' + s.time + '</td>' +
-         '<td class="ctr">' + s.register + '</td>' +
-         '<td class="ctr">' + s.staff + '</td>' +
-         '<td>' + lineSummary(s) + '</td>' +
-         '<td class="num">' + qty + '</td>' +
-         '<td class="ctr">' + s.payment + '</td>' +
-         '<td class="num">' + yen(s.total) + '</td>' +
-         '<td class="ctr">' + s.status + '</td>' +
-         '<td class="ctr"><a href="detail.html?id=' + s.id + '">詳細</a></td>' +
+    var statusCell = (s.status === '返品') ? '<span class="ng">返品</span>' : '通常';
+    h += '<tr>' +
+         '<td class="col-no">' + num(start + i + 1) + '</td>' +
+         '<td class="col-id">' + s.id + '</td>' +
+         '<td class="col-date">' + s.date + '</td>' +
+         '<td class="col-time">' + s.time + '</td>' +
+         '<td class="col-reg">' + s.register + '</td>' +
+         '<td class="col-staff">' + s.staff + '</td>' +
+         '<td class="col-item">' + lineSummary(s) + '</td>' +
+         '<td class="col-qty">' + qty + '</td>' +
+         '<td class="col-pay">' + s.payment + '</td>' +
+         '<td class="col-amount">' + yen(s.total) + '</td>' +
+         '<td class="col-status">' + statusCell + '</td>' +
+         '<td class="col-link"><a href="detail.html?id=' + s.id + '">詳細</a></td>' +
          '</tr>';
   }
-  if (view.length === 0) h += '<tr><td colspan="12" style="text-align:center;padding:20px;color:#888">該当するデータがありません。</td></tr>';
+  h += '</tbody>';
+  if (view.length === 0) {
+    h = '<thead><tr><th>No.</th><th>伝票番号</th><th>売上日</th><th>時刻</th><th>レジ</th>' +
+        '<th>担当者</th><th>商品</th><th>点数</th><th>支払方法</th><th>金額（税込）</th><th>区分</th><th>&nbsp;</th></tr></thead>' +
+        '<tbody></tbody>';
+    document.getElementById('nodata').style.display = 'block';
+  }
   document.getElementById('list').innerHTML = h;
 }
 </script>

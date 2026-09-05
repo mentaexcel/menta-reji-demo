@@ -62,23 +62,24 @@ if (ME) {
   }
 
   var t = agg(LAST);
-  var h = '<tr><th>支店</th><th>伝票枚数</th><th>客数</th><th>売上金額</th><th>客単価</th>' +
-          '<th>現金</th><th>クレジット</th><th>QR決済</th><th>電子マネー</th></tr>' +
-          '<tr><td>' + ME.store.code + '：' + ME.store.name + '</td>' +
-          '<td class="num">' + num(t.count) + '</td><td class="num">' + num(t.cust) + '</td>' +
-          '<td class="num">' + yen(t.total) + '</td><td class="num">' + yen(Math.round(t.total / t.cust)) + '</td>' +
-          '<td class="num">' + yen(t.pay['現金']) + '</td><td class="num">' + yen(t.pay['クレジット']) + '</td>' +
-          '<td class="num">' + yen(t.pay['QR決済']) + '</td><td class="num">' + yen(t.pay['電子マネー']) + '</td></tr>';
+  var h = '<thead><tr><th>支店</th><th>伝票枚数</th><th>客数</th><th>売上金額</th><th>客単価</th>' +
+          '<th>現金</th><th>クレジット</th><th>QR決済</th><th>電子マネー</th></tr></thead><tbody>' +
+          '<tr><td class="col-store">' + ME.store.code + '：' + ME.store.name + '</td>' +
+          '<td class="col-count">' + num(t.count) + '</td><td class="col-cust">' + num(t.cust) + '</td>' +
+          '<td class="col-amount">' + yen(t.total) + '</td><td class="col-avg">' + yen(Math.round(t.total / t.cust)) + '</td>' +
+          '<td class="col-cash">' + yen(t.pay['現金']) + '</td><td class="col-credit">' + yen(t.pay['クレジット']) + '</td>' +
+          '<td class="col-qr">' + yen(t.pay['QR決済']) + '</td><td class="col-emoney">' + yen(t.pay['電子マネー']) + '</td></tr></tbody>';
   document.getElementById('today').innerHTML = h;
 
-  var h2 = '<tr><th>日付</th><th>伝票枚数</th><th>客数</th><th>売上金額</th><th>客単価</th></tr>';
-  for (var d = 27, k = 0; d <= 31; d++, k++) {
+  var h2 = '<thead><tr><th>日付</th><th>伝票枚数</th><th>客数</th><th>売上金額</th><th>客単価</th></tr></thead><tbody>';
+  for (var d = 27; d <= 31; d++) {
     var date = '2026-08-' + d;
     var a = agg(date);
-    h2 += '<tr' + (k % 2 ? ' class="even"' : '') + '><td>' + date + '</td>' +
-          '<td class="num">' + num(a.count) + '</td><td class="num">' + num(a.cust) + '</td>' +
-          '<td class="num">' + yen(a.total) + '</td><td class="num">' + yen(Math.round(a.total / a.cust)) + '</td></tr>';
+    h2 += '<tr><td class="col-date">' + date + '</td>' +
+          '<td class="col-count">' + num(a.count) + '</td><td class="col-cust">' + num(a.cust) + '</td>' +
+          '<td class="col-amount">' + yen(a.total) + '</td><td class="col-avg">' + yen(Math.round(a.total / a.cust)) + '</td></tr>';
   }
+  h2 += '</tbody>';
   document.getElementById('recent').innerHTML = h2;
 }
 </script>

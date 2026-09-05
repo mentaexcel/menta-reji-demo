@@ -85,6 +85,68 @@ RPA（Power Automate Desktop など）やブラウザ自動化・AIエージェ�
 10. **前月比・前年比が出ない**
 11. **APIが無い** ── これがこのシステムの本質。裏口が無いので画面を操作するしかない
 
+## HTMLの構造は固定してあります（データ抽出が壊れないように）
+
+古い画面の見た目はそのままですが、**中身のHTMLは支店やページが変わっても同じ形**になるように作ってあります。
+Power Automate Desktop の「Web データ抽出」やスクレイピングで、
+**支店を切り替えたら取れなくなる、という事故が起きないようにするため**です。
+
+### 一覧テーブル
+
+- 一覧は必ず `<table id="list">`。見出しは `<thead>`、データは `<tbody>`、合計は `<tfoot>` に分かれています
+- **データ行 `<tbody> <tr>` には class を一切付けていません。** 全支店・全ページ・返品行もまったく同じ形です
+- セルの class は**列ごとに固定**です（下表）
+- 縞模様と返品の赤字は **CSSだけ**で表現しています（`:nth-child` と `:has`）。HTMLは変わりません
+
+売上明細（sales.html）の列：
+
+| 位置 | class | 内容 |
+|---|---|---|
+| 1 | `col-no` | 通し番号 |
+| 2 | `col-id` | 伝票番号 |
+| 3 | `col-date` | 売上日 |
+| 4 | `col-time` | 時刻 |
+| 5 | `col-reg` | レジ |
+| 6 | `col-staff` | 担当者 |
+| 7 | `col-item` | 商品 |
+| 8 | `col-qty` | 点数 |
+| 9 | `col-pay` | 支払方法 |
+| 10 | `col-amount` | 金額（税込） |
+| 11 | `col-status` | 区分（返品のみ `<span class="ng">` が入る） |
+| 12 | `col-link` | 詳細へのリンク |
+
+日別集計は `col-date` `col-dow` `col-count` `col-cust` `col-amount` `col-avg` `col-cash` `col-credit` `col-qr` `col-emoney` `col-return`、
+商品別は `col-rank` `col-code` `col-name` `col-cat` `col-price` `col-qty` `col-amount` `col-share`、
+スタッフ別は `col-rank` `col-staff` `col-count` `col-cust` `col-amount` `col-avg` `col-perslip` です。
+
+### ページ送り
+
+ページャーは常に **「先頭・前へ・ページ番号・次へ・最終」の5ブロック**を出します。
+使えないときは `<a>` ではなく `<span class="pgoff">` になるだけで、**並びは変わりません。**
+
+| 要素 | id |
+|---|---|
+| «先頭 | `pgFirst` |
+| 前へ | `pgPrev` |
+| 次へ | `pgNext` |
+| 最終» | `pgLast` |
+
+最後のページでは `pgNext` の `<a>` が無くなるので、**「`#pgNext` が在るあいだ繰り返す」でループの終了判定ができます。**
+総ページ数は検索結果の行に「全 n ページ中 m ページ目」と文字で出しています。
+
+### ログイン画面
+
+| 項目 | id |
+|---|---|
+| ログインID | `loginId` |
+| パスワード | `password` |
+| ログインボタン | `loginBtn` |
+
+### 行数について
+
+表示件数50件のとき、どの支店も10ページ分（各50行）が埋まります。
+売上日を絞り込んだ場合だけ、最終ページの行数が50未満になります。
+
 ## 想定している使い方
 
 - Power Automate Desktop / RPA の練習

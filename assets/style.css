@@ -43,8 +43,23 @@ table.list th { background: #dfe6ef; border: 1px solid #99a4b3; padding: 4px 5px
 table.list td { border: 1px solid #c3c9d2; padding: 3px 5px; }
 table.list td.num { text-align: right; }
 table.list td.ctr { text-align: center; }
-table.list tr.even td { background: #f7f8fa; }
-table.list tr.henpin td { color: #cc0000; }
+/* 縞模様と返品の赤字は CSS 側だけで表現する。
+   HTML の行(tr)・セル(td)の属性は全行まったく同じにして、
+   RPA やスクレイピングのセレクタが崩れないようにしている。 */
+table.list tbody tr:nth-child(even) td { background: #f7f8fa; }
+table.list tbody tr:has(.ng) td { color: #cc0000; }
+table.list tfoot th { background: #dfe6ef; }
+span.ng { color: #cc0000; font-weight: bold; }
+
+/* 一覧の列（並びは固定・支店が変わっても同じ） */
+table.list td.col-no, table.list td.col-qty, table.list td.col-amount { text-align: right; }
+table.list td.col-time, table.list td.col-reg, table.list td.col-staff,
+table.list td.col-pay, table.list td.col-status, table.list td.col-link { text-align: center; }
+
+/* ページャー：ボタンの並びをページによって変えない
+   （使えないときは a ではなく span になるだけで、位置は固定） */
+.pager span.pgoff { margin: 0 2px; padding: 1px 5px; border: 1px solid #dcdcdc; color: #bbb; }
+.pager span.pg-nums { margin: 0 2px; }
 
 .pager { margin: 6px 0; font-size: 11px; }
 .pager a { margin: 0 2px; padding: 1px 5px; border: 1px solid #b6c1d1; text-decoration: none; }
@@ -80,3 +95,15 @@ body.login { background: #d7dde6; }
 #loginerr { display: none; border: 1px solid #d99; background: #ffeeee; color: #cc0000; padding: 6px 8px; margin-bottom: 10px; font-size: 12px; }
 #loginwrap .lnote { margin-top: 16px; padding-top: 10px; border-top: 1px dotted #bbb; font-size: 11px; color: #777; line-height: 1.6; }
 #loginfoot { text-align: center; font-size: 11px; color: #667; margin-top: 14px; }
+
+/* 曜日の色（td の属性は変えず、中の span だけで表現する） */
+span.dow-sun { color: #cc0000; }
+span.dow-sat { color: #0033cc; }
+span.dow-wd  { color: inherit; }
+
+/* 日別集計・商品別・スタッフ別の列 */
+table.list td.col-count, table.list td.col-cust, table.list td.col-amount,
+table.list td.col-avg, table.list td.col-cash, table.list td.col-credit,
+table.list td.col-qr, table.list td.col-emoney, table.list td.col-return,
+table.list td.col-price, table.list td.col-share, table.list td.col-perslip { text-align: right; }
+table.list td.col-dow, table.list td.col-rank, table.list td.col-cat { text-align: center; }
