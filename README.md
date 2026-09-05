@@ -120,9 +120,12 @@ Power Automate Desktop の「Web データ抽出」やスクレイピングで�
 `col-store` は**ログイン中の支店名**が入ります。5支店ぶんを1つの表にまとめたとき、
 どの行がどの支店のものか分かるように付けてあります。
 
-日別集計は `col-date` `col-dow` `col-count` `col-cust` `col-amount` `col-avg` `col-cash` `col-credit` `col-qr` `col-emoney` `col-return`、
-商品別は `col-rank` `col-code` `col-name` `col-cat` `col-price` `col-qty` `col-amount` `col-share`、
-スタッフ別は `col-rank` `col-staff` `col-count` `col-cust` `col-amount` `col-avg` `col-perslip` です。
+日別集計は `col-store` `col-date` `col-dow` `col-count` `col-cust` `col-amount` `col-avg` `col-cash` `col-credit` `col-qr` `col-emoney` `col-return`、
+商品別は `col-store` `col-rank` `col-code` `col-name` `col-cat` `col-price` `col-qty` `col-amount` `col-share`、
+スタッフ別は `col-store` `col-rank` `col-staff` `col-count` `col-cust` `col-amount` `col-avg` `col-perslip` です。
+
+**4つの一覧すべての先頭側に `col-store`（店舗名）があります。** 5支店ぶんを1つの表に積み上げても、
+どの行がどの支店のものか行単位で分かります。
 
 ### ページ送り
 

@@ -63,11 +63,12 @@ if (ME) {
   for (var k in map) list.push(map[k]);
   list.sort(function (a, b) { return b.amount - a.amount; });
 
-  var h = '<thead><tr><th>順位</th><th>商品コード</th><th>商品名</th><th>分類</th><th>単価</th><th>販売数</th>' +
+  var h = '<thead><tr><th>店舗名</th><th>順位</th><th>商品コード</th><th>商品名</th><th>分類</th><th>単価</th><th>販売数</th>' +
           '<th>売上金額</th><th>構成比</th></tr></thead><tbody>';
   for (var i = 0; i < list.length; i++) {
     var r = list[i];
     h += '<tr>' +
+         '<td class="col-store">' + ME.store.name + '</td>' +
          '<td class="col-rank">' + (i + 1) + '</td>' +
          '<td class="col-code">' + r.item.code + '</td>' +
          '<td class="col-name">' + r.item.name + '</td>' +
@@ -77,7 +78,7 @@ if (ME) {
          '<td class="col-amount">' + yen(r.amount) + '</td>' +
          '<td class="col-share">' + (r.amount / totalAmount * 100).toFixed(1) + '%</td></tr>';
   }
-  h += '</tbody><tfoot><tr><th colspan="6" style="text-align:right">合計</th><th style="text-align:right">' + yen(totalAmount) + '</th><th style="text-align:right">100.0%</th></tr></tfoot>';
+  h += '</tbody><tfoot><tr><th colspan="7" style="text-align:right">合計</th><th style="text-align:right">' + yen(totalAmount) + '</th><th style="text-align:right">100.0%</th></tr></tfoot>';
   document.getElementById('list').innerHTML = h;
 }
 </script>
