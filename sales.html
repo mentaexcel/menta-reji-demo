@@ -90,21 +90,35 @@ if (ME) {
   var view = rows.slice(start, start + per);
 
   document.getElementById('hit').innerHTML =
-    '検索結果：<b>' + num(rows.length) + '</b> 件中　' + num(start + 1) + ' 〜 ' + num(start + view.length) + ' 件を表示';
+    '検索結果：<b>' + num(rows.length) + '</b> 件中　' + num(start + 1) + ' 〜 ' + num(start + view.length) + ' 件を表示' +
+    '　（全 ' + num(maxPage) + ' ページ中 ' + num(page) + ' ページ目）';
 
   function link(p) {
     return 'sales.html?from=' + cond.from + '&to=' + cond.to +
            '&payment=' + encodeURIComponent(cond.payment) + '&keyword=' + encodeURIComponent(cond.keyword) +
            '&per=' + per + '&p=' + p;
   }
+  /* ページ番号は最大10個まで表示する（現在ページを中心にスライド） */
   function pagerHtml() {
+    var WIN = 10;
+    var start = Math.max(1, page - Math.floor(WIN / 2));
+    var end = Math.min(maxPage, start + WIN - 1);
+    start = Math.max(1, end - WIN + 1);
     var h = '';
-    if (page > 1) h += '<a href="' + link(page - 1) + '">前へ</a>';
-    for (var i = 1; i <= maxPage; i++) {
+    if (page > 1) {
+      h += '<a href="' + link(1) + '">&laquo;先頭</a>';
+      h += '<a href="' + link(page - 1) + '">前へ</a>';
+    }
+    if (start > 1) h += '<span style="margin:0 3px;color:#888">…</span>';
+    for (var i = start; i <= end; i++) {
       if (i === page) h += '<span class="cur">' + i + '</span>';
       else h += '<a href="' + link(i) + '">' + i + '</a>';
     }
-    if (page < maxPage) h += '<a href="' + link(page + 1) + '">次へ</a>';
+    if (end < maxPage) h += '<span style="margin:0 3px;color:#888">…</span>';
+    if (page < maxPage) {
+      h += '<a href="' + link(page + 1) + '">次へ</a>';
+      h += '<a href="' + link(maxPage) + '">最終&raquo;</a>';
+    }
     return h;
   }
   document.getElementById('pager1').innerHTML = pagerHtml();
