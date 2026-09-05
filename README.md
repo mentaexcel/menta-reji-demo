@@ -105,16 +105,20 @@ Power Automate Desktop の「Web データ抽出」やスクレイピングで�
 |---|---|---|
 | 1 | `col-no` | 通し番号 |
 | 2 | `col-id` | 伝票番号 |
-| 3 | `col-date` | 売上日 |
-| 4 | `col-time` | 時刻 |
-| 5 | `col-reg` | レジ |
-| 6 | `col-staff` | 担当者 |
-| 7 | `col-item` | 商品 |
-| 8 | `col-qty` | 点数 |
-| 9 | `col-pay` | 支払方法 |
-| 10 | `col-amount` | 金額（税込） |
-| 11 | `col-status` | 区分（返品のみ `<span class="ng">` が入る） |
-| 12 | `col-link` | 詳細へのリンク |
+| 3 | `col-store` | 店舗名 |
+| 4 | `col-date` | 売上日 |
+| 5 | `col-time` | 時刻 |
+| 6 | `col-reg` | レジ |
+| 7 | `col-staff` | 担当者 |
+| 8 | `col-item` | 商品 |
+| 9 | `col-qty` | 点数 |
+| 10 | `col-pay` | 支払方法 |
+| 11 | `col-amount` | 金額（税込） |
+| 12 | `col-status` | 区分（通常／返品） |
+| 13 | `col-link` | 詳細へのリンク |
+
+`col-store` は**ログイン中の支店名**が入ります。5支店ぶんを1つの表にまとめたとき、
+どの行がどの支店のものか分かるように付けてあります。
 
 日別集計は `col-date` `col-dow` `col-count` `col-cust` `col-amount` `col-avg` `col-cash` `col-credit` `col-qr` `col-emoney` `col-return`、
 商品別は `col-rank` `col-code` `col-name` `col-cat` `col-price` `col-qty` `col-amount` `col-share`、

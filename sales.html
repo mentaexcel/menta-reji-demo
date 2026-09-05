@@ -152,7 +152,7 @@ if (ME) {
      データ行は「どの支店でも・何ページ目でも・返品でも」まったく同じ形にする。
      tr に class は付けない。列の class も固定。返品は区分セルの中身だけが変わる。 */
   var h = '<thead><tr>' +
-          '<th>No.</th><th>伝票番号</th><th>売上日</th><th>時刻</th><th>レジ</th>' +
+          '<th>No.</th><th>伝票番号</th><th>店舗名</th><th>売上日</th><th>時刻</th><th>レジ</th>' +
           '<th>担当者</th><th>商品</th><th>点数</th><th>支払方法</th><th>金額（税込）</th><th>区分</th><th>&nbsp;</th>' +
           '</tr></thead><tbody>';
   for (var i = 0; i < view.length; i++) {
@@ -162,6 +162,7 @@ if (ME) {
     h += '<tr>' +
          '<td class="col-no">' + num(start + i + 1) + '</td>' +
          '<td class="col-id">' + s.id + '</td>' +
+         '<td class="col-store">' + s.storeName + '</td>' +
          '<td class="col-date">' + s.date + '</td>' +
          '<td class="col-time">' + s.time + '</td>' +
          '<td class="col-reg">' + s.register + '</td>' +
@@ -176,7 +177,7 @@ if (ME) {
   }
   h += '</tbody>';
   if (view.length === 0) {
-    h = '<thead><tr><th>No.</th><th>伝票番号</th><th>売上日</th><th>時刻</th><th>レジ</th>' +
+    h = '<thead><tr><th>No.</th><th>伝票番号</th><th>店舗名</th><th>売上日</th><th>時刻</th><th>レジ</th>' +
         '<th>担当者</th><th>商品</th><th>点数</th><th>支払方法</th><th>金額（税込）</th><th>区分</th><th>&nbsp;</th></tr></thead>' +
         '<tbody></tbody>';
     document.getElementById('nodata').style.display = 'block';
