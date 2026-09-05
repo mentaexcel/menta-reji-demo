@@ -43,13 +43,12 @@ table.list th { background: #dfe6ef; border: 1px solid #99a4b3; padding: 4px 5px
 table.list td { border: 1px solid #c3c9d2; padding: 3px 5px; }
 table.list td.num { text-align: right; }
 table.list td.ctr { text-align: center; }
-/* 縞模様と返品の赤字は CSS 側だけで表現する。
-   HTML の行(tr)・セル(td)の属性は全行まったく同じにして、
-   RPA やスクレイピングのセレクタが崩れないようにしている。 */
+/* 縞模様は CSS 側だけで表現する。
+   一覧の行(tr)とセル(td)は、通常行でも返品行でも、どの支店でも、
+   タグ・class・属性・要素数がまったく同じになるようにしている。
+   返品は「区分」列の文字と、金額のマイナス表示で判別する。 */
 table.list tbody tr:nth-child(even) td { background: #f7f8fa; }
-table.list tbody tr:has(.ng) td { color: #cc0000; }
 table.list tfoot th { background: #dfe6ef; }
-span.ng { color: #cc0000; font-weight: bold; }
 
 /* 一覧の列（並びは固定・支店が変わっても同じ） */
 table.list td.col-no, table.list td.col-qty, table.list td.col-amount { text-align: right; }

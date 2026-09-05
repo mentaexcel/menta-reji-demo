@@ -116,9 +116,19 @@ if (ME) {
   /* ページャーは常に「先頭・前へ・ページ番号・次へ・最終」の5ブロックを出す。
      使えないときは a ではなく span になるだけで、要素の並びは変わらない。
      ページ送りの自動化では id（pgFirst / pgPrev / pgNext / pgLast）で拾える。 */
-  function navPart(cls, id, enabled, target, label) {
+  /* 送りボタンは href にページ番号を入れず、クリック時に飛び先を決める。
+     こうすると「次へ」のHTMLが、どの支店でも何ページ目でも一字一句同じになる。
+        <a id="pgNext" href="#" onclick="return goNext();">次へ</a>
+     最後のページでは a ではなく span になるので、
+     「#pgNext がある間くり返す」でループの終了判定ができる。 */
+  window.goFirst = function () { location.href = link(1); return false; };
+  window.goPrev  = function () { location.href = link(page - 1); return false; };
+  window.goNext  = function () { location.href = link(page + 1); return false; };
+  window.goLast  = function () { location.href = link(maxPage); return false; };
+
+  function navPart(cls, id, enabled, fn, label) {
     var inner = enabled
-      ? '<a id="' + id + '" href="' + link(target) + '">' + label + '</a>'
+      ? '<a id="' + id + '" href="#" onclick="return ' + fn + '();">' + label + '</a>'
       : '<span class="pgoff">' + label + '</span>';
     return '<span class="' + cls + '">' + inner + '</span>';
   }
@@ -129,11 +139,11 @@ if (ME) {
       if (i === page) nums += '<span class="cur">' + i + '</span>';
       else nums += '<a href="' + link(i) + '">' + i + '</a>';
     }
-    return navPart('pg-first', i2('pgFirst'), page > 1, 1, '&laquo;先頭') +
-           navPart('pg-prev',  i2('pgPrev'),  page > 1, page - 1, '前へ') +
+    return navPart('pg-first', i2('pgFirst'), page > 1, 'goFirst', '&laquo;先頭') +
+           navPart('pg-prev',  i2('pgPrev'),  page > 1, 'goPrev',  '前へ') +
            '<span class="pg-nums">' + nums + '</span>' +
-           navPart('pg-next',  i2('pgNext'),  page < maxPage, page + 1, '次へ') +
-           navPart('pg-last',  i2('pgLast'),  page < maxPage, maxPage, '最終&raquo;');
+           navPart('pg-next',  i2('pgNext'),  page < maxPage, 'goNext', '次へ') +
+           navPart('pg-last',  i2('pgLast'),  page < maxPage, 'goLast', '最終&raquo;');
   }
   document.getElementById('pager1').innerHTML = pagerHtml(true);
   document.getElementById('pager2').innerHTML = pagerHtml(false);
@@ -149,7 +159,6 @@ if (ME) {
     var s = view[i];
     var qty = 0;
     for (var j = 0; j < s.lines.length; j++) qty += s.lines[j].qty;
-    var statusCell = (s.status === '返品') ? '<span class="ng">返品</span>' : '通常';
     h += '<tr>' +
          '<td class="col-no">' + num(start + i + 1) + '</td>' +
          '<td class="col-id">' + s.id + '</td>' +
@@ -161,7 +170,7 @@ if (ME) {
          '<td class="col-qty">' + qty + '</td>' +
          '<td class="col-pay">' + s.payment + '</td>' +
          '<td class="col-amount">' + yen(s.total) + '</td>' +
-         '<td class="col-status">' + statusCell + '</td>' +
+         '<td class="col-status">' + s.status + '</td>' +
          '<td class="col-link"><a href="detail.html?id=' + s.id + '">詳細</a></td>' +
          '</tr>';
   }
