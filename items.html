@@ -28,7 +28,8 @@
 
 <table class="list" id="list"></table>
 
-<p style="font-size:11px;color:#888;">※分類別の内訳、時間帯別の内訳は本画面では参照できません。</p>
+<p style="font-size:11px;color:#888;">※販売数・売上金額は返品を差し引いた純額です。<br>
+※分類別の内訳、時間帯別の内訳は本画面では参照できません。</p>
 
 </div>
 <div id="footer"></div>
@@ -51,7 +52,6 @@ if (ME) {
   for (var i = 0; i < ITEMS.length; i++) map[ITEMS[i].code] = { item: ITEMS[i], qty: 0, amount: 0 };
   var totalAmount = 0;
   for (var i = 0; i < rows.length; i++) {
-    if (rows[i].status === '返品') continue;
     for (var j = 0; j < rows[i].lines.length; j++) {
       var l = rows[i].lines[j];
       map[l.code].qty += l.qty;

@@ -28,7 +28,8 @@
 
 <table class="list" id="list"></table>
 
-<p style="font-size:11px;color:#888;">※本集計はレジ担当者ベースです。勤怠システムの実績時間とは連動しておりません。</p>
+<p style="font-size:11px;color:#888;">※売上金額は返品を差し引いた純売上です。<br>
+※本集計はレジ担当者ベースです。勤怠システムの実績時間とは連動しておりません。</p>
 
 </div>
 <div id="footer"></div>
@@ -51,8 +52,9 @@ if (ME) {
   for (var i = 0; i < ME.store.staffs.length; i++) map[ME.store.staffs[i]] = { c: 0, u: 0, t: 0, q: 0 };
   for (var i = 0; i < rows.length; i++) {
     var s = rows[i];
-    if (s.status === '返品' || !map[s.staff]) continue;
-    map[s.staff].c++; map[s.staff].u += s.customers; map[s.staff].t += s.total;
+    if (!map[s.staff]) continue;
+    if (s.status !== '返品') map[s.staff].c++;
+    map[s.staff].u += s.customers; map[s.staff].t += s.total;
     for (var j = 0; j < s.lines.length; j++) map[s.staff].q += s.lines[j].qty;
   }
   var list = [];

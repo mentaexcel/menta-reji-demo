@@ -33,6 +33,7 @@
 <table class="list" id="list"></table>
 
 <p style="font-size:11px;color:#888;">
+※売上金額は返品を差し引いた純売上です。伝票枚数には返品伝票を含みません。<br>
 ※グラフ表示機能はオプション契約（月額）となります。ご希望の場合は担当営業までご連絡ください。<br>
 ※全社合計・他支店との比較は本部にて集計しております。
 </p>
@@ -62,9 +63,9 @@ if (ME) {
     for (var j = 0; j < SALES.length; j++) {
       var s = SALES[j];
       if (s.date !== date || s.store !== ME.store.code) continue;
-      if (s.status === '返品') { hen++; T.hen++; continue; }
-      c++; u += s.customers; t += s.total; pay[s.payment] += s.total;
-      T.c++; T.u += s.customers; T.t += s.total; T.pay[s.payment] += s.total;
+      if (s.status === '返品') { hen++; T.hen++; } else { c++; T.c++; }
+      u += s.customers; t += s.total; pay[s.payment] += s.total;
+      T.u += s.customers; T.t += s.total; T.pay[s.payment] += s.total;
     }
     var dow = new Date(2026, 7, d).getDay();
     var col = dow === 0 ? ' style="color:#cc0000"' : (dow === 6 ? ' style="color:#0033cc"' : '');

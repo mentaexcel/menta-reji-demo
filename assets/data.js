@@ -89,6 +89,16 @@ var SALES = [];
           total += it.price * qty;
         }
         var pay = rnd() < 0.38 ? '現金' : pick(PAYMENTS);
+        var customers = rnd() < 0.7 ? 1 : rint(2, 4);
+        var status = rnd() < 0.012 ? '返品' : '通常';
+
+        /* 返品伝票は数量・金額をマイナスで計上する（客数にはカウントしない） */
+        if (status === '返品') {
+          for (var m = 0; m < lines.length; m++) lines[m].qty = -lines[m].qty;
+          total = -total;
+          customers = 0;
+        }
+
         SALES.push({
           id: store.code + '-' + date.replace(/-/g, '') + '-' + pad(c + 1, 4),
           date: date,
@@ -98,11 +108,11 @@ var SALES = [];
           register: 'レジ' + rint(1, 2),
           staff: pick(store.staffs),
           payment: pay,
-          customers: rnd() < 0.7 ? 1 : rint(2, 4),
+          customers: customers,
           lines: lines,
           total: total,
-          tax: Math.floor(total / 11),
-          status: rnd() < 0.012 ? '返品' : '通常'
+          tax: (total < 0 ? -1 : 1) * Math.floor(Math.abs(total) / 11),
+          status: status
         });
       }
     }
@@ -115,7 +125,8 @@ SALES.sort(function (a, b) {
 });
 
 function yen(n) {
-  return '\u00A5' + ('' + n).replace(/(\d)(?=(\d{3})+$)/g, '$1,');
+  var sign = n < 0 ? '-' : '';
+  return sign + '\u00A5' + ('' + Math.abs(n)).replace(/(\d)(?=(\d{3})+$)/g, '$1,');
 }
 function num(n) {
   return ('' + n).replace(/(\d)(?=(\d{3})+$)/g, '$1,');

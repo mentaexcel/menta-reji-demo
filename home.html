@@ -54,8 +54,9 @@ if (ME) {
     for (var p = 0; p < PAYMENTS.length; p++) r.pay[PAYMENTS[p]] = 0;
     for (var i = 0; i < SALES.length; i++) {
       var s = SALES[i];
-      if (s.date !== date || s.store !== ME.store.code || s.status === '返品') continue;
-      r.count++; r.total += s.total; r.cust += s.customers; r.pay[s.payment] += s.total;
+      if (s.date !== date || s.store !== ME.store.code) continue;
+      if (s.status !== '返品') r.count++;
+      r.total += s.total; r.cust += s.customers; r.pay[s.payment] += s.total;
     }
     return r;
   }
