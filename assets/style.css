@@ -1,0 +1,64 @@
+/* メンタレジ Ver.2.1 共通スタイル（2009年初版 / 一部改修） */
+body {
+  margin: 0;
+  padding: 0;
+  background: #e8e8e8;
+  font-family: "ＭＳ Ｐゴシック", "MS PGothic", Osaka, sans-serif;
+  font-size: 12px;
+  color: #333;
+}
+a { color: #0033cc; }
+a:visited { color: #660099; }
+
+#wrap { width: 950px; margin: 0 auto; background: #ffffff; border-left: 1px solid #b0b0b0; border-right: 1px solid #b0b0b0; }
+
+#header { background: #22447a; color: #fff; padding: 6px 10px; height: 34px; }
+#header h1 { margin: 0; font-size: 16px; font-weight: bold; letter-spacing: 1px; float: left; }
+#header h1 span { font-size: 11px; font-weight: normal; margin-left: 8px; color: #b9cbe6; }
+#header .userbox { float: right; font-size: 11px; padding-top: 4px; text-align: right; }
+#header .userbox a { color: #ffe680; }
+.clear { clear: both; }
+
+#gnav { background: #dfe6ef; border-top: 1px solid #fff; border-bottom: 1px solid #9aa8bb; padding: 4px 6px; }
+#gnav a { display: inline-block; padding: 3px 10px; margin-right: 2px; border: 1px solid #b6c1d1; background: #f4f7fb; text-decoration: none; color: #22447a; }
+#gnav a:hover { background: #fff; }
+#gnav a.on { background: #22447a; color: #fff; border-color: #22447a; font-weight: bold; }
+
+#main { padding: 10px 12px 24px 12px; }
+
+h2.ttl { font-size: 14px; margin: 0 0 8px 0; padding: 4px 6px; border-left: 6px solid #22447a; background: #f2f4f7; }
+h3.sub { font-size: 12px; margin: 16px 0 4px 0; padding: 2px 0 2px 4px; border-left: 3px solid #999; }
+
+.pankuzu { font-size: 11px; color: #666; margin-bottom: 6px; }
+
+table.search { border-collapse: collapse; width: 100%; margin-bottom: 8px; border: 1px solid #9aa8bb; }
+table.search th { background: #eef1f6; border: 1px solid #c8cfd9; padding: 4px 6px; text-align: right; width: 90px; font-weight: normal; white-space: nowrap; }
+table.search td { border: 1px solid #c8cfd9; padding: 4px 6px; }
+input[type=text], select { font-family: inherit; font-size: 12px; border: 1px solid #7f9db9; padding: 2px; }
+.btn { font-family: inherit; font-size: 12px; padding: 2px 14px; border: 1px solid #7a7a7a; background: #eeeeee; cursor: pointer; }
+.btn:hover { background: #e0e0e0; }
+
+table.list { border-collapse: collapse; width: 100%; border: 1px solid #99a4b3; }
+table.list th { background: #dfe6ef; border: 1px solid #99a4b3; padding: 4px 5px; font-weight: bold; white-space: nowrap; }
+table.list td { border: 1px solid #c3c9d2; padding: 3px 5px; }
+table.list td.num { text-align: right; }
+table.list td.ctr { text-align: center; }
+table.list tr.even td { background: #f7f8fa; }
+table.list tr.henpin td { color: #cc0000; }
+
+.pager { margin: 6px 0; font-size: 11px; }
+.pager a { margin: 0 2px; padding: 1px 5px; border: 1px solid #b6c1d1; text-decoration: none; }
+.pager span.cur { margin: 0 2px; padding: 1px 5px; border: 1px solid #22447a; background: #22447a; color: #fff; }
+.hitnum { font-size: 11px; color: #444; margin: 4px 0; }
+
+.notice { border: 1px solid #d9c98a; background: #fffbe6; padding: 6px 8px; margin-bottom: 10px; font-size: 11px; }
+.notice b { color: #a06f00; }
+
+table.rcpt { border-collapse: collapse; width: 420px; border: 1px solid #99a4b3; }
+table.rcpt th { background: #eef1f6; border: 1px solid #c3c9d2; padding: 4px 6px; text-align: right; width: 110px; font-weight: normal; }
+table.rcpt td { border: 1px solid #c3c9d2; padding: 4px 6px; }
+
+#footer { clear: both; border-top: 1px solid #9aa8bb; background: #f2f2f2; padding: 6px 10px; font-size: 11px; color: #777; text-align: center; }
+
+/* 印刷用 */
+@media print { #gnav, .search, .pager { display: none; } }

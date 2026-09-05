@@ -1,0 +1,74 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html lang="ja">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>スタッフ別売上 | メンタレジ 売上管理システム</title>
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<div id="wrap">
+<div id="header"></div>
+<div id="gnav"></div>
+<div id="main">
+
+<div class="pankuzu">ホーム &gt; スタッフ別</div>
+<h2 class="ttl">スタッフ別売上集計</h2>
+
+<form action="staff.html" method="get">
+<table class="search">
+<tr>
+  <th>集計期間</th>
+  <td><input type="text" name="from" id="from" size="12"> 〜 <input type="text" name="to" id="to" size="12"></td>
+  <th>店舗</th>
+  <td><select name="store" id="store"></select>&nbsp;<input type="submit" class="btn" value="集 計"></td>
+</tr>
+</table>
+</form>
+
+<table class="list" id="list"></table>
+
+<p style="font-size:11px;color:#888;">※本集計はレジ担当者ベースです。勤怠システムの実績時間とは連動しておりません。</p>
+
+</div>
+<div id="footer"></div>
+</div>
+
+<script src="assets/data.js"></script>
+<script src="assets/app.js"></script>
+<script>
+renderFrame('staff');
+
+var cond = {
+  from: getParam('from') || '2026-08-01',
+  to: getParam('to') || '2026-08-31',
+  store: getParam('store')
+};
+document.getElementById('from').value = cond.from;
+document.getElementById('to').value = cond.to;
+document.getElementById('store').innerHTML = storeOptions(cond.store);
+
+var rows = filterSales(cond);
+var map = {};
+for (var i = 0; i < STAFFS.length; i++) map[STAFFS[i]] = { c: 0, u: 0, t: 0, q: 0 };
+for (var i = 0; i < rows.length; i++) {
+  var s = rows[i];
+  if (s.status === '返品') continue;
+  map[s.staff].c++; map[s.staff].u += s.customers; map[s.staff].t += s.total;
+  for (var j = 0; j < s.lines.length; j++) map[s.staff].q += s.lines[j].qty;
+}
+var list = [];
+for (var k in map) list.push({ name: k, v: map[k] });
+list.sort(function (a, b) { return b.v.t - a.v.t; });
+
+var h = '<tr><th>順位</th><th>担当者</th><th>伝票枚数</th><th>客数</th><th>売上金額</th><th>客単価</th><th>1枚あたり点数</th></tr>';
+for (var i = 0; i < list.length; i++) {
+  var r = list[i];
+  h += '<tr' + (i % 2 ? ' class="even"' : '') + '><td class="ctr">' + (i + 1) + '</td><td>' + r.name + '</td>' +
+       '<td class="num">' + num(r.v.c) + '</td><td class="num">' + num(r.v.u) + '</td>' +
+       '<td class="num">' + yen(r.v.t) + '</td><td class="num">' + yen(Math.round(r.v.t / r.v.u)) + '</td>' +
+       '<td class="num">' + (r.v.q / r.v.c).toFixed(1) + '</td></tr>';
+}
+document.getElementById('list').innerHTML = h;
+</script>
+</body>
+</html>
