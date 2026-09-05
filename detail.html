@@ -4,6 +4,7 @@
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <title>伝票詳細 | メンタレジ 売上管理システム</title>
 <link rel="stylesheet" href="assets/style.css">
+<script>(function(){try{if(!sessionStorage.getItem('mreji_login'))location.replace('index.html');}catch(e){location.replace('index.html');}})();</script>
 </head>
 <body>
 <div id="wrap">
@@ -29,38 +30,47 @@
 <script src="assets/data.js"></script>
 <script src="assets/app.js"></script>
 <script>
-renderFrame('sales');
+var ME = requireLogin();
+if (ME) {
+  renderFrame('sales', ME);
 
-var id = getParam('id');
-var s = null;
-for (var i = 0; i < SALES.length; i++) if (SALES[i].id === id) s = SALES[i];
+  var id = getParam('id');
+  var s = null;
+  for (var i = 0; i < SALES.length; i++) if (SALES[i].id === id) s = SALES[i];
 
-if (!s) {
-  document.getElementById('body').innerHTML = '<div class="notice">指定された伝票が見つかりません。（伝票番号：' + (id || '未指定') + '）</div>';
-} else {
-  var h = '<table class="rcpt">' +
-    '<tr><th>伝票番号</th><td>' + s.id + '</td></tr>' +
-    '<tr><th>売上日時</th><td>' + s.date + ' ' + s.time + '</td></tr>' +
-    '<tr><th>店舗</th><td>' + s.store + '：' + s.storeName + '</td></tr>' +
-    '<tr><th>レジ／担当者</th><td>' + s.register + '／' + s.staff + '</td></tr>' +
-    '<tr><th>客数</th><td>' + s.customers + ' 名</td></tr>' +
-    '<tr><th>支払方法</th><td>' + s.payment + '</td></tr>' +
-    '<tr><th>区分</th><td>' + s.status + '</td></tr>' +
-    '</table>';
+  if (s && s.store !== ME.store.code) {
+    document.getElementById('body').innerHTML =
+      '<div class="notice" style="border-color:#d99;background:#ffeeee;color:#cc0000">' +
+      '<b>【エラー】この伝票は他支店（' + s.storeName + '）のデータのため参照できません。</b><br>' +
+      'ご自身の支店（' + ME.store.name + '）の伝票のみ参照可能です。</div>';
+  } else if (!s) {
+    document.getElementById('body').innerHTML =
+      '<div class="notice">指定された伝票が見つかりません。（伝票番号：' + (id || '未指定') + '）</div>';
+  } else {
+    var h = '<table class="rcpt">' +
+      '<tr><th>伝票番号</th><td>' + s.id + '</td></tr>' +
+      '<tr><th>売上日時</th><td>' + s.date + ' ' + s.time + '</td></tr>' +
+      '<tr><th>支店</th><td>' + s.store + '：' + s.storeName + '</td></tr>' +
+      '<tr><th>レジ／担当者</th><td>' + s.register + '／' + s.staff + '</td></tr>' +
+      '<tr><th>客数</th><td>' + s.customers + ' 名</td></tr>' +
+      '<tr><th>支払方法</th><td>' + s.payment + '</td></tr>' +
+      '<tr><th>区分</th><td>' + s.status + '</td></tr>' +
+      '</table>';
 
-  h += '<h3 class="sub">■ 明細</h3><table class="list" style="width:620px">' +
-       '<tr><th>行</th><th>商品コード</th><th>商品名</th><th>分類</th><th>単価</th><th>数量</th><th>金額</th></tr>';
-  for (var j = 0; j < s.lines.length; j++) {
-    var l = s.lines[j];
-    h += '<tr' + (j % 2 ? ' class="even"' : '') + '><td class="ctr">' + (j + 1) + '</td><td>' + l.code + '</td>' +
-         '<td>' + l.name + '</td><td class="ctr">' + l.cat + '</td>' +
-         '<td class="num">' + yen(l.price) + '</td><td class="num">' + l.qty + '</td>' +
-         '<td class="num">' + yen(l.price * l.qty) + '</td></tr>';
+    h += '<h3 class="sub">■ 明細</h3><table class="list" style="width:620px">' +
+         '<tr><th>行</th><th>商品コード</th><th>商品名</th><th>分類</th><th>単価</th><th>数量</th><th>金額</th></tr>';
+    for (var j = 0; j < s.lines.length; j++) {
+      var l = s.lines[j];
+      h += '<tr' + (j % 2 ? ' class="even"' : '') + '><td class="ctr">' + (j + 1) + '</td><td>' + l.code + '</td>' +
+           '<td>' + l.name + '</td><td class="ctr">' + l.cat + '</td>' +
+           '<td class="num">' + yen(l.price) + '</td><td class="num">' + l.qty + '</td>' +
+           '<td class="num">' + yen(l.price * l.qty) + '</td></tr>';
+    }
+    h += '<tr><th colspan="6" style="text-align:right">合計（税込）</th><th style="text-align:right">' + yen(s.total) + '</th></tr>';
+    h += '<tr><th colspan="6" style="text-align:right">（内 消費税10%）</th><th style="text-align:right">' + yen(s.tax) + '</th></tr>';
+    h += '</table>';
+    document.getElementById('body').innerHTML = h;
   }
-  h += '<tr><th colspan="6" style="text-align:right">合計（税込）</th><th style="text-align:right">' + yen(s.total) + '</th></tr>';
-  h += '<tr><th colspan="6" style="text-align:right">（内 消費税10%）</th><th style="text-align:right">' + yen(s.tax) + '</th></tr>';
-  h += '</table>';
-  document.getElementById('body').innerHTML = h;
 }
 </script>
 </body>

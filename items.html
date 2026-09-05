@@ -4,6 +4,7 @@
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <title>商品別売上 | メンタレジ 売上管理システム</title>
 <link rel="stylesheet" href="assets/style.css">
+<script>(function(){try{if(!sessionStorage.getItem('mreji_login'))location.replace('index.html');}catch(e){location.replace('index.html');}})();</script>
 </head>
 <body>
 <div id="wrap">
@@ -16,11 +17,11 @@
 
 <form action="items.html" method="get">
 <table class="search">
+<tr><th>対象支店</th><td colspan="3" id="storecell"></td></tr>
 <tr>
   <th>集計期間</th>
-  <td><input type="text" name="from" id="from" size="12"> 〜 <input type="text" name="to" id="to" size="12"></td>
-  <th>店舗</th>
-  <td><select name="store" id="store"></select>&nbsp;<input type="submit" class="btn" value="集 計"></td>
+  <td colspan="3"><input type="text" name="from" id="from" size="12"> 〜 <input type="text" name="to" id="to" size="12">
+      &nbsp;<input type="submit" class="btn" value="集 計"></td>
 </tr>
 </table>
 </form>
@@ -36,47 +37,45 @@
 <script src="assets/data.js"></script>
 <script src="assets/app.js"></script>
 <script>
-renderFrame('items');
+var ME = requireLogin();
+if (ME) {
+  renderFrame('items', ME);
+  document.getElementById('storecell').innerHTML = storeBadge(ME.store);
 
-var cond = {
-  from: getParam('from') || '2026-08-01',
-  to: getParam('to') || '2026-08-31',
-  store: getParam('store')
-};
-document.getElementById('from').value = cond.from;
-document.getElementById('to').value = cond.to;
-document.getElementById('store').innerHTML = storeOptions(cond.store);
+  var cond = { from: getParam('from') || '2026-08-01', to: getParam('to') || '2026-08-31' };
+  document.getElementById('from').value = cond.from;
+  document.getElementById('to').value = cond.to;
 
-var rows = filterSales(cond);
-var map = {};
-for (var i = 0; i < ITEMS.length; i++) map[ITEMS[i].code] = { item: ITEMS[i], qty: 0, amount: 0, cnt: 0 };
-var totalAmount = 0;
-for (var i = 0; i < rows.length; i++) {
-  if (rows[i].status === '返品') continue;
-  for (var j = 0; j < rows[i].lines.length; j++) {
-    var l = rows[i].lines[j];
-    map[l.code].qty += l.qty;
-    map[l.code].amount += l.price * l.qty;
-    map[l.code].cnt++;
-    totalAmount += l.price * l.qty;
+  var rows = filterSales(cond, ME.store.code);
+  var map = {};
+  for (var i = 0; i < ITEMS.length; i++) map[ITEMS[i].code] = { item: ITEMS[i], qty: 0, amount: 0 };
+  var totalAmount = 0;
+  for (var i = 0; i < rows.length; i++) {
+    if (rows[i].status === '返品') continue;
+    for (var j = 0; j < rows[i].lines.length; j++) {
+      var l = rows[i].lines[j];
+      map[l.code].qty += l.qty;
+      map[l.code].amount += l.price * l.qty;
+      totalAmount += l.price * l.qty;
+    }
   }
-}
-var list = [];
-for (var k in map) list.push(map[k]);
-list.sort(function (a, b) { return b.amount - a.amount; });
+  var list = [];
+  for (var k in map) list.push(map[k]);
+  list.sort(function (a, b) { return b.amount - a.amount; });
 
-var h = '<tr><th>順位</th><th>商品コード</th><th>商品名</th><th>分類</th><th>単価</th><th>販売数</th>' +
-        '<th>売上金額</th><th>構成比</th></tr>';
-for (var i = 0; i < list.length; i++) {
-  var r = list[i];
-  h += '<tr' + (i % 2 ? ' class="even"' : '') + '>' +
-       '<td class="ctr">' + (i + 1) + '</td><td>' + r.item.code + '</td><td>' + r.item.name + '</td>' +
-       '<td class="ctr">' + r.item.cat + '</td><td class="num">' + yen(r.item.price) + '</td>' +
-       '<td class="num">' + num(r.qty) + '</td><td class="num">' + yen(r.amount) + '</td>' +
-       '<td class="num">' + (r.amount / totalAmount * 100).toFixed(1) + '%</td></tr>';
+  var h = '<tr><th>順位</th><th>商品コード</th><th>商品名</th><th>分類</th><th>単価</th><th>販売数</th>' +
+          '<th>売上金額</th><th>構成比</th></tr>';
+  for (var i = 0; i < list.length; i++) {
+    var r = list[i];
+    h += '<tr' + (i % 2 ? ' class="even"' : '') + '>' +
+         '<td class="ctr">' + (i + 1) + '</td><td>' + r.item.code + '</td><td>' + r.item.name + '</td>' +
+         '<td class="ctr">' + r.item.cat + '</td><td class="num">' + yen(r.item.price) + '</td>' +
+         '<td class="num">' + num(r.qty) + '</td><td class="num">' + yen(r.amount) + '</td>' +
+         '<td class="num">' + (r.amount / totalAmount * 100).toFixed(1) + '%</td></tr>';
+  }
+  h += '<tr><th colspan="6" style="text-align:right">合計</th><th style="text-align:right">' + yen(totalAmount) + '</th><th style="text-align:right">100.0%</th></tr>';
+  document.getElementById('list').innerHTML = h;
 }
-h += '<tr><th colspan="6" style="text-align:right">合計</th><th style="text-align:right">' + yen(totalAmount) + '</th><th style="text-align:right">100.0%</th></tr>';
-document.getElementById('list').innerHTML = h;
 </script>
 </body>
 </html>

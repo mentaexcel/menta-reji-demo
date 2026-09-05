@@ -1,5 +1,5 @@
-/* メンタレジ 売上管理システム ダミーデータ生成
-   ※撮影用のダミーです。実在の店舗・人物とは関係ありません。
+/* メンタレジ 売上管理システム ダミーデータ
+   ※練習用のダミーです。実在の企業・店舗・人物とは関係ありません。
    毎回同じデータが出るように固定シードで生成しています。 */
 
 var SEED = 20260801;
@@ -10,13 +10,29 @@ function rnd() {
 function pick(arr) { return arr[Math.floor(rnd() * arr.length)]; }
 function rint(a, b) { return a + Math.floor(rnd() * (b - a + 1)); }
 
+/* ── 支店（ログインするとこの1店舗のデータだけが見えます）── */
 var STORES = [
-  { code: '001', name: '那覇本店' },
-  { code: '002', name: '北谷店' },
-  { code: '003', name: '名護店' }
+  { code: '101', name: '北海道支店', area: '札幌市中央区', scale: 32,
+    loginId: 's101', password: 'hkd2026pos', manager: '佐々木 涼子',
+    staffs: ['佐藤', '高橋', '中村', '小林'] },
+  { code: '102', name: '東京支店',   area: '渋谷区',       scale: 58,
+    loginId: 's102', password: 'tky2026pos', manager: '青木 健一',
+    staffs: ['山田', '鈴木', '田中', '渡辺'] },
+  { code: '103', name: '大阪支店',   area: '大阪市北区',   scale: 44,
+    loginId: 's103', password: 'osk2026pos', manager: '西村 美和',
+    staffs: ['井上', '松本', '木村', '森田'] },
+  { code: '104', name: '神奈川支店', area: '横浜市西区',   scale: 38,
+    loginId: 's104', password: 'kng2026pos', manager: '長谷川 亮',
+    staffs: ['加藤', '吉田', '山口', '石川'] },
+  { code: '105', name: '沖縄支店',   area: '那覇市おもろまち', scale: 26,
+    loginId: 's105', password: 'okn2026pos', manager: '比嘉 直樹',
+    staffs: ['玉城', '上原', '島袋', '仲村'] }
 ];
 
-var STAFFS = ['山田', '佐藤', '鈴木', '高橋', '田中'];
+function findStore(code) {
+  for (var i = 0; i < STORES.length; i++) if (STORES[i].code === code) return STORES[i];
+  return null;
+}
 
 var PAYMENTS = ['現金', 'クレジット', 'QR決済', '電子マネー'];
 
@@ -48,20 +64,18 @@ function pad(n, len) {
   return s;
 }
 
-/* 2026年8月1日〜8月31日の伝票を生成 */
+/* 2026年8月1日〜8月31日の伝票を生成（全支店分） */
 var SALES = [];
 (function build() {
-  var seq = 0;
   for (var d = 1; d <= 31; d++) {
     var date = '2026-08-' + pad(d, 2);
     var dow = new Date(2026, 7, d).getDay(); // 0=日
     for (var s = 0; s < STORES.length; s++) {
       var store = STORES[s];
-      // 店舗規模と曜日で客数を変える
-      var base = [46, 34, 28][s];
+      var base = store.scale;
       if (dow === 0 || dow === 6) base = Math.floor(base * 1.35);
       if (dow === 2) base = Math.floor(base * 0.82);
-      var count = base + rint(-6, 6);
+      var count = base + rint(-5, 5);
       for (var c = 0; c < count; c++) {
         var hour = rint(7, 19);
         var min = rint(0, 59);
@@ -75,16 +89,14 @@ var SALES = [];
           total += it.price * qty;
         }
         var pay = rnd() < 0.38 ? '現金' : pick(PAYMENTS);
-        seq++;
         SALES.push({
           id: store.code + '-' + date.replace(/-/g, '') + '-' + pad(c + 1, 4),
-          seq: seq,
           date: date,
           time: pad(hour, 2) + ':' + pad(min, 2),
           store: store.code,
           storeName: store.name,
           register: 'レジ' + rint(1, 2),
-          staff: pick(STAFFS),
+          staff: pick(store.staffs),
           payment: pay,
           customers: rnd() < 0.7 ? 1 : rint(2, 4),
           lines: lines,

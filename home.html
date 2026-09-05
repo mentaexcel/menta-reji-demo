@@ -1,0 +1,85 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html lang="ja">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>トップ | メンタレジ 売上管理システム</title>
+<link rel="stylesheet" href="assets/style.css">
+<script>(function(){try{if(!sessionStorage.getItem('mreji_login'))location.replace('index.html');}catch(e){location.replace('index.html');}})();</script>
+</head>
+<body>
+<div id="wrap">
+<div id="header"></div>
+<div id="gnav"></div>
+<div id="main">
+
+<div class="pankuzu">ホーム</div>
+<h2 class="ttl">トップページ</h2>
+
+<div class="notice">
+<b>【本部からのお知らせ】</b><br>
+・2026/09/01　9月分の消費税区分マスタを更新しました。<br>
+・2026/08/20　サーバメンテナンスのため 9/14(月) 2:00〜5:00 は本システムをご利用いただけません。<br>
+・2026/08/05　全社合計の集計は本部で行います。各支店では自店のデータのみ参照してください。
+</div>
+
+<h3 class="sub">■ 本日の速報（2026-08-31）</h3>
+<table class="list" id="today"></table>
+
+<h3 class="sub">■ 直近5日間の売上</h3>
+<table class="list" id="recent"></table>
+
+<h3 class="sub">■ よく使うメニュー</h3>
+<ul>
+<li><a href="sales.html">売上明細を検索する</a></li>
+<li><a href="daily.html">日別の売上を集計する</a></li>
+<li><a href="items.html">商品別の売上を確認する</a></li>
+<li><a href="staff.html">スタッフ別の売上を確認する</a></li>
+</ul>
+
+</div>
+<div id="footer"></div>
+</div>
+
+<script src="assets/data.js"></script>
+<script src="assets/app.js"></script>
+<script>
+var ME = requireLogin();
+if (ME) {
+  renderFrame('top', ME);
+
+  var LAST = '2026-08-31';
+
+  function agg(date) {
+    var r = { count: 0, total: 0, cust: 0, pay: {} };
+    for (var p = 0; p < PAYMENTS.length; p++) r.pay[PAYMENTS[p]] = 0;
+    for (var i = 0; i < SALES.length; i++) {
+      var s = SALES[i];
+      if (s.date !== date || s.store !== ME.store.code || s.status === '返品') continue;
+      r.count++; r.total += s.total; r.cust += s.customers; r.pay[s.payment] += s.total;
+    }
+    return r;
+  }
+
+  var t = agg(LAST);
+  var h = '<tr><th>支店</th><th>伝票枚数</th><th>客数</th><th>売上金額</th><th>客単価</th>' +
+          '<th>現金</th><th>クレジット</th><th>QR決済</th><th>電子マネー</th></tr>' +
+          '<tr><td>' + ME.store.code + '：' + ME.store.name + '</td>' +
+          '<td class="num">' + num(t.count) + '</td><td class="num">' + num(t.cust) + '</td>' +
+          '<td class="num">' + yen(t.total) + '</td><td class="num">' + yen(Math.round(t.total / t.cust)) + '</td>' +
+          '<td class="num">' + yen(t.pay['現金']) + '</td><td class="num">' + yen(t.pay['クレジット']) + '</td>' +
+          '<td class="num">' + yen(t.pay['QR決済']) + '</td><td class="num">' + yen(t.pay['電子マネー']) + '</td></tr>';
+  document.getElementById('today').innerHTML = h;
+
+  var h2 = '<tr><th>日付</th><th>伝票枚数</th><th>客数</th><th>売上金額</th><th>客単価</th></tr>';
+  for (var d = 27, k = 0; d <= 31; d++, k++) {
+    var date = '2026-08-' + d;
+    var a = agg(date);
+    h2 += '<tr' + (k % 2 ? ' class="even"' : '') + '><td>' + date + '</td>' +
+          '<td class="num">' + num(a.count) + '</td><td class="num">' + num(a.cust) + '</td>' +
+          '<td class="num">' + yen(a.total) + '</td><td class="num">' + yen(Math.round(a.total / a.cust)) + '</td></tr>';
+  }
+  document.getElementById('recent').innerHTML = h2;
+}
+</script>
+</body>
+</html>

@@ -4,6 +4,7 @@
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <title>日別集計 | メンタレジ 売上管理システム</title>
 <link rel="stylesheet" href="assets/style.css">
+<script>(function(){try{if(!sessionStorage.getItem('mreji_login'))location.replace('index.html');}catch(e){location.replace('index.html');}})();</script>
 </head>
 <body>
 <div id="wrap">
@@ -14,14 +15,16 @@
 <div class="pankuzu">ホーム &gt; 日別集計</div>
 <h2 class="ttl">日別売上集計</h2>
 
-<form id="f" action="daily.html" method="get">
+<form action="daily.html" method="get">
 <table class="search">
 <tr>
+  <th>対象支店</th>
+  <td colspan="3" id="storecell"></td>
+</tr>
+<tr>
   <th>対象年月</th>
-  <td><select name="ym"><option value="2026-08">2026年08月</option></select>
-      <span style="color:#888">（過去分は月次締め処理後に参照できます）</span></td>
-  <th>店舗</th>
-  <td><select name="store" id="store"></select>
+  <td colspan="3"><select name="ym"><option value="2026-08">2026年08月</option></select>
+      <span style="color:#888">（過去分は月次締め処理後に参照できます）</span>
       &nbsp;<input type="submit" class="btn" value="表 示"></td>
 </tr>
 </table>
@@ -30,7 +33,8 @@
 <table class="list" id="list"></table>
 
 <p style="font-size:11px;color:#888;">
-※グラフ表示機能はオプション契約（月額）となります。ご希望の場合は担当営業までご連絡ください。
+※グラフ表示機能はオプション契約（月額）となります。ご希望の場合は担当営業までご連絡ください。<br>
+※全社合計・他支店との比較は本部にて集計しております。
 </p>
 
 </div>
@@ -40,46 +44,46 @@
 <script src="assets/data.js"></script>
 <script src="assets/app.js"></script>
 <script>
-renderFrame('daily');
+var ME = requireLogin();
+if (ME) {
+  renderFrame('daily', ME);
+  document.getElementById('storecell').innerHTML = storeBadge(ME.store);
 
-var store = getParam('store');
-document.getElementById('store').innerHTML = storeOptions(store);
+  var WD = ['日', '月', '火', '水', '木', '金', '土'];
+  var h = '<tr><th>日付</th><th>曜日</th><th>伝票枚数</th><th>客数</th><th>売上金額（税込）</th><th>客単価</th>' +
+          '<th>現金</th><th>クレジット</th><th>QR決済</th><th>電子マネー</th><th>返品</th></tr>';
+  var T = { c: 0, u: 0, t: 0, pay: {}, hen: 0 };
+  for (var i = 0; i < PAYMENTS.length; i++) T.pay[PAYMENTS[i]] = 0;
 
-var WD = ['日', '月', '火', '水', '木', '金', '土'];
-var h = '<tr><th>日付</th><th>曜日</th><th>伝票枚数</th><th>客数</th><th>売上金額（税込）</th><th>客単価</th>' +
-        '<th>現金</th><th>クレジット</th><th>QR決済</th><th>電子マネー</th><th>返品</th></tr>';
-var T = { c: 0, u: 0, t: 0, pay: {}, hen: 0 };
-for (var i = 0; i < PAYMENTS.length; i++) T.pay[PAYMENTS[i]] = 0;
-
-for (var d = 1; d <= 31; d++) {
-  var date = '2026-08-' + pad(d, 2);
-  var c = 0, u = 0, t = 0, hen = 0, pay = {};
-  for (var p = 0; p < PAYMENTS.length; p++) pay[PAYMENTS[p]] = 0;
-  for (var j = 0; j < SALES.length; j++) {
-    var s = SALES[j];
-    if (s.date !== date) continue;
-    if (store && s.store !== store) continue;
-    if (s.status === '返品') { hen++; T.hen++; continue; }
-    c++; u += s.customers; t += s.total; pay[s.payment] += s.total;
-    T.c++; T.u += s.customers; T.t += s.total; T.pay[s.payment] += s.total;
+  for (var d = 1; d <= 31; d++) {
+    var date = '2026-08-' + pad(d, 2);
+    var c = 0, u = 0, t = 0, hen = 0, pay = {};
+    for (var p = 0; p < PAYMENTS.length; p++) pay[PAYMENTS[p]] = 0;
+    for (var j = 0; j < SALES.length; j++) {
+      var s = SALES[j];
+      if (s.date !== date || s.store !== ME.store.code) continue;
+      if (s.status === '返品') { hen++; T.hen++; continue; }
+      c++; u += s.customers; t += s.total; pay[s.payment] += s.total;
+      T.c++; T.u += s.customers; T.t += s.total; T.pay[s.payment] += s.total;
+    }
+    var dow = new Date(2026, 7, d).getDay();
+    var col = dow === 0 ? ' style="color:#cc0000"' : (dow === 6 ? ' style="color:#0033cc"' : '');
+    h += '<tr' + (d % 2 ? ' class="even"' : '') + '>' +
+         '<td>' + date + '</td><td class="ctr"' + col + '>' + WD[dow] + '</td>' +
+         '<td class="num">' + num(c) + '</td><td class="num">' + num(u) + '</td>' +
+         '<td class="num">' + yen(t) + '</td><td class="num">' + yen(Math.round(t / u)) + '</td>' +
+         '<td class="num">' + yen(pay['現金']) + '</td><td class="num">' + yen(pay['クレジット']) + '</td>' +
+         '<td class="num">' + yen(pay['QR決済']) + '</td><td class="num">' + yen(pay['電子マネー']) + '</td>' +
+         '<td class="num">' + hen + '</td></tr>';
   }
-  var dow = new Date(2026, 7, d).getDay();
-  var col = dow === 0 ? ' style="color:#cc0000"' : (dow === 6 ? ' style="color:#0033cc"' : '');
-  h += '<tr' + (d % 2 ? ' class="even"' : '') + '>' +
-       '<td>' + date + '</td><td class="ctr"' + col + '>' + WD[dow] + '</td>' +
-       '<td class="num">' + num(c) + '</td><td class="num">' + num(u) + '</td>' +
-       '<td class="num">' + yen(t) + '</td><td class="num">' + yen(Math.round(t / u)) + '</td>' +
-       '<td class="num">' + yen(pay['現金']) + '</td><td class="num">' + yen(pay['クレジット']) + '</td>' +
-       '<td class="num">' + yen(pay['QR決済']) + '</td><td class="num">' + yen(pay['電子マネー']) + '</td>' +
-       '<td class="num">' + hen + '</td></tr>';
+  h += '<tr><th colspan="2">月計</th>' +
+       '<th style="text-align:right">' + num(T.c) + '</th><th style="text-align:right">' + num(T.u) + '</th>' +
+       '<th style="text-align:right">' + yen(T.t) + '</th><th style="text-align:right">' + yen(Math.round(T.t / T.u)) + '</th>' +
+       '<th style="text-align:right">' + yen(T.pay['現金']) + '</th><th style="text-align:right">' + yen(T.pay['クレジット']) + '</th>' +
+       '<th style="text-align:right">' + yen(T.pay['QR決済']) + '</th><th style="text-align:right">' + yen(T.pay['電子マネー']) + '</th>' +
+       '<th style="text-align:right">' + T.hen + '</th></tr>';
+  document.getElementById('list').innerHTML = h;
 }
-h += '<tr><th colspan="2">月計</th>' +
-     '<th style="text-align:right">' + num(T.c) + '</th><th style="text-align:right">' + num(T.u) + '</th>' +
-     '<th style="text-align:right">' + yen(T.t) + '</th><th style="text-align:right">' + yen(Math.round(T.t / T.u)) + '</th>' +
-     '<th style="text-align:right">' + yen(T.pay['現金']) + '</th><th style="text-align:right">' + yen(T.pay['クレジット']) + '</th>' +
-     '<th style="text-align:right">' + yen(T.pay['QR決済']) + '</th><th style="text-align:right">' + yen(T.pay['電子マネー']) + '</th>' +
-     '<th style="text-align:right">' + T.hen + '</th></tr>';
-document.getElementById('list').innerHTML = h;
 </script>
 </body>
 </html>

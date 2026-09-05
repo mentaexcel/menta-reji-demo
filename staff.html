@@ -4,6 +4,7 @@
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <title>スタッフ別売上 | メンタレジ 売上管理システム</title>
 <link rel="stylesheet" href="assets/style.css">
+<script>(function(){try{if(!sessionStorage.getItem('mreji_login'))location.replace('index.html');}catch(e){location.replace('index.html');}})();</script>
 </head>
 <body>
 <div id="wrap">
@@ -16,11 +17,11 @@
 
 <form action="staff.html" method="get">
 <table class="search">
+<tr><th>対象支店</th><td colspan="3" id="storecell"></td></tr>
 <tr>
   <th>集計期間</th>
-  <td><input type="text" name="from" id="from" size="12"> 〜 <input type="text" name="to" id="to" size="12"></td>
-  <th>店舗</th>
-  <td><select name="store" id="store"></select>&nbsp;<input type="submit" class="btn" value="集 計"></td>
+  <td colspan="3"><input type="text" name="from" id="from" size="12"> 〜 <input type="text" name="to" id="to" size="12">
+      &nbsp;<input type="submit" class="btn" value="集 計"></td>
 </tr>
 </table>
 </form>
@@ -36,39 +37,38 @@
 <script src="assets/data.js"></script>
 <script src="assets/app.js"></script>
 <script>
-renderFrame('staff');
+var ME = requireLogin();
+if (ME) {
+  renderFrame('staff', ME);
+  document.getElementById('storecell').innerHTML = storeBadge(ME.store);
 
-var cond = {
-  from: getParam('from') || '2026-08-01',
-  to: getParam('to') || '2026-08-31',
-  store: getParam('store')
-};
-document.getElementById('from').value = cond.from;
-document.getElementById('to').value = cond.to;
-document.getElementById('store').innerHTML = storeOptions(cond.store);
+  var cond = { from: getParam('from') || '2026-08-01', to: getParam('to') || '2026-08-31' };
+  document.getElementById('from').value = cond.from;
+  document.getElementById('to').value = cond.to;
 
-var rows = filterSales(cond);
-var map = {};
-for (var i = 0; i < STAFFS.length; i++) map[STAFFS[i]] = { c: 0, u: 0, t: 0, q: 0 };
-for (var i = 0; i < rows.length; i++) {
-  var s = rows[i];
-  if (s.status === '返品') continue;
-  map[s.staff].c++; map[s.staff].u += s.customers; map[s.staff].t += s.total;
-  for (var j = 0; j < s.lines.length; j++) map[s.staff].q += s.lines[j].qty;
+  var rows = filterSales(cond, ME.store.code);
+  var map = {};
+  for (var i = 0; i < ME.store.staffs.length; i++) map[ME.store.staffs[i]] = { c: 0, u: 0, t: 0, q: 0 };
+  for (var i = 0; i < rows.length; i++) {
+    var s = rows[i];
+    if (s.status === '返品' || !map[s.staff]) continue;
+    map[s.staff].c++; map[s.staff].u += s.customers; map[s.staff].t += s.total;
+    for (var j = 0; j < s.lines.length; j++) map[s.staff].q += s.lines[j].qty;
+  }
+  var list = [];
+  for (var k in map) list.push({ name: k, v: map[k] });
+  list.sort(function (a, b) { return b.v.t - a.v.t; });
+
+  var h = '<tr><th>順位</th><th>担当者</th><th>伝票枚数</th><th>客数</th><th>売上金額</th><th>客単価</th><th>1枚あたり点数</th></tr>';
+  for (var i = 0; i < list.length; i++) {
+    var r = list[i];
+    h += '<tr' + (i % 2 ? ' class="even"' : '') + '><td class="ctr">' + (i + 1) + '</td><td>' + r.name + '</td>' +
+         '<td class="num">' + num(r.v.c) + '</td><td class="num">' + num(r.v.u) + '</td>' +
+         '<td class="num">' + yen(r.v.t) + '</td><td class="num">' + yen(Math.round(r.v.t / r.v.u)) + '</td>' +
+         '<td class="num">' + (r.v.q / r.v.c).toFixed(1) + '</td></tr>';
+  }
+  document.getElementById('list').innerHTML = h;
 }
-var list = [];
-for (var k in map) list.push({ name: k, v: map[k] });
-list.sort(function (a, b) { return b.v.t - a.v.t; });
-
-var h = '<tr><th>順位</th><th>担当者</th><th>伝票枚数</th><th>客数</th><th>売上金額</th><th>客単価</th><th>1枚あたり点数</th></tr>';
-for (var i = 0; i < list.length; i++) {
-  var r = list[i];
-  h += '<tr' + (i % 2 ? ' class="even"' : '') + '><td class="ctr">' + (i + 1) + '</td><td>' + r.name + '</td>' +
-       '<td class="num">' + num(r.v.c) + '</td><td class="num">' + num(r.v.u) + '</td>' +
-       '<td class="num">' + yen(r.v.t) + '</td><td class="num">' + yen(Math.round(r.v.t / r.v.u)) + '</td>' +
-       '<td class="num">' + (r.v.q / r.v.c).toFixed(1) + '</td></tr>';
-}
-document.getElementById('list').innerHTML = h;
 </script>
 </body>
 </html>

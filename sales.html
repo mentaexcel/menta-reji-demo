@@ -4,6 +4,7 @@
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <title>売上明細 | メンタレジ 売上管理システム</title>
 <link rel="stylesheet" href="assets/style.css">
+<script>(function(){try{if(!sessionStorage.getItem('mreji_login'))location.replace('index.html');}catch(e){location.replace('index.html');}})();</script>
 </head>
 <body>
 <div id="wrap">
@@ -17,21 +18,21 @@
 <form id="f" action="sales.html" method="get">
 <table class="search">
 <tr>
+  <th>対象支店</th>
+  <td colspan="3" id="storecell"></td>
+</tr>
+<tr>
   <th>売上日</th>
   <td><input type="text" name="from" id="from" size="12" value=""> 〜 <input type="text" name="to" id="to" size="12" value="">
       <span style="color:#888">（例：2026-08-01　※半角で入力してください）</span></td>
-  <th>店舗</th>
-  <td><select name="store" id="store"></select></td>
-</tr>
-<tr>
   <th>支払方法</th>
   <td><select name="payment" id="payment"></select></td>
-  <th>キーワード</th>
-  <td><input type="text" name="keyword" id="keyword" size="20" value=""><span style="color:#888">（伝票番号／商品名／担当者）</span></td>
 </tr>
 <tr>
+  <th>キーワード</th>
+  <td><input type="text" name="keyword" id="keyword" size="20" value=""><span style="color:#888">（伝票番号／商品名／担当者）</span></td>
   <th>表示件数</th>
-  <td colspan="3">
+  <td>
     <select name="per" id="per">
       <option value="50">50件</option>
       <option value="100">100件</option>
@@ -50,8 +51,8 @@
 <div class="pager" id="pager2"></div>
 
 <p style="font-size:11px;color:#888;">
-※本画面の一覧はCSV出力に対応しておりません。データが必要な場合は管理者へ依頼票をご提出ください。<br>
-※検索結果が5,000件を超える場合、先頭5,000件のみ表示されます。
+※本画面の一覧はCSV出力に対応しておりません。データが必要な場合は本部システム課へ依頼票をご提出ください。<br>
+※他支店のデータは本画面では参照できません。
 </p>
 
 </div>
@@ -61,77 +62,78 @@
 <script src="assets/data.js"></script>
 <script src="assets/app.js"></script>
 <script>
-renderFrame('sales');
+var ME = requireLogin();
+if (ME) {
+  renderFrame('sales', ME);
+  document.getElementById('storecell').innerHTML = storeBadge(ME.store);
 
-var cond = {
-  from: getParam('from') || '2026-08-01',
-  to: getParam('to') || '2026-08-31',
-  store: getParam('store'),
-  payment: getParam('payment'),
-  keyword: getParam('keyword')
-};
-var per = parseInt(getParam('per') || '50', 10);
-var page = parseInt(getParam('p') || '1', 10);
+  var cond = {
+    from: getParam('from') || '2026-08-01',
+    to: getParam('to') || '2026-08-31',
+    payment: getParam('payment'),
+    keyword: getParam('keyword')
+  };
+  var per = parseInt(getParam('per') || '50', 10);
+  var page = parseInt(getParam('p') || '1', 10);
 
-document.getElementById('from').value = cond.from;
-document.getElementById('to').value = cond.to;
-document.getElementById('store').innerHTML = storeOptions(cond.store);
-document.getElementById('payment').innerHTML = paymentOptions(cond.payment);
-document.getElementById('keyword').value = cond.keyword;
-document.getElementById('per').value = per;
+  document.getElementById('from').value = cond.from;
+  document.getElementById('to').value = cond.to;
+  document.getElementById('payment').innerHTML = paymentOptions(cond.payment);
+  document.getElementById('keyword').value = cond.keyword;
+  document.getElementById('per').value = per;
 
-var rows = filterSales(cond);
-var maxPage = Math.max(1, Math.ceil(rows.length / per));
-if (page > maxPage) page = maxPage;
-var start = (page - 1) * per;
-var view = rows.slice(start, start + per);
+  var rows = filterSales(cond, ME.store.code);
+  var maxPage = Math.max(1, Math.ceil(rows.length / per));
+  if (page > maxPage) page = maxPage;
+  var start = (page - 1) * per;
+  var view = rows.slice(start, start + per);
 
-document.getElementById('hit').innerHTML =
-  '検索結果：<b>' + num(rows.length) + '</b> 件中　' + num(start + 1) + ' 〜 ' + num(start + view.length) + ' 件を表示';
+  document.getElementById('hit').innerHTML =
+    '検索結果：<b>' + num(rows.length) + '</b> 件中　' + num(start + 1) + ' 〜 ' + num(start + view.length) + ' 件を表示';
 
-function pagerHtml() {
-  var h = '';
-  if (page > 1) h += '<a href="' + link(page - 1) + '">前へ</a>';
-  for (var i = 1; i <= maxPage; i++) {
-    if (i === page) h += '<span class="cur">' + i + '</span>';
-    else h += '<a href="' + link(i) + '">' + i + '</a>';
+  function link(p) {
+    return 'sales.html?from=' + cond.from + '&to=' + cond.to +
+           '&payment=' + encodeURIComponent(cond.payment) + '&keyword=' + encodeURIComponent(cond.keyword) +
+           '&per=' + per + '&p=' + p;
   }
-  if (page < maxPage) h += '<a href="' + link(page + 1) + '">次へ</a>';
-  return h;
-}
-function link(p) {
-  return 'sales.html?from=' + cond.from + '&to=' + cond.to + '&store=' + cond.store +
-         '&payment=' + encodeURIComponent(cond.payment) + '&keyword=' + encodeURIComponent(cond.keyword) +
-         '&per=' + per + '&p=' + p;
-}
-document.getElementById('pager1').innerHTML = pagerHtml();
-document.getElementById('pager2').innerHTML = pagerHtml();
+  function pagerHtml() {
+    var h = '';
+    if (page > 1) h += '<a href="' + link(page - 1) + '">前へ</a>';
+    for (var i = 1; i <= maxPage; i++) {
+      if (i === page) h += '<span class="cur">' + i + '</span>';
+      else h += '<a href="' + link(i) + '">' + i + '</a>';
+    }
+    if (page < maxPage) h += '<a href="' + link(page + 1) + '">次へ</a>';
+    return h;
+  }
+  document.getElementById('pager1').innerHTML = pagerHtml();
+  document.getElementById('pager2').innerHTML = pagerHtml();
 
-var h = '<tr><th>No.</th><th>伝票番号</th><th>売上日</th><th>時刻</th><th>店舗</th><th>レジ</th>' +
-        '<th>担当者</th><th>商品</th><th>点数</th><th>支払方法</th><th>金額（税込）</th><th>区分</th><th>&nbsp;</th></tr>';
-for (var i = 0; i < view.length; i++) {
-  var s = view[i];
-  var qty = 0;
-  for (var j = 0; j < s.lines.length; j++) qty += s.lines[j].qty;
-  var cls = (i % 2 ? 'even' : '') + (s.status === '返品' ? ' henpin' : '');
-  h += '<tr class="' + cls + '">' +
-       '<td class="num">' + num(start + i + 1) + '</td>' +
-       '<td>' + s.id + '</td>' +
-       '<td>' + s.date + '</td>' +
-       '<td class="ctr">' + s.time + '</td>' +
-       '<td>' + s.storeName + '</td>' +
-       '<td class="ctr">' + s.register + '</td>' +
-       '<td class="ctr">' + s.staff + '</td>' +
-       '<td>' + lineSummary(s) + '</td>' +
-       '<td class="num">' + qty + '</td>' +
-       '<td class="ctr">' + s.payment + '</td>' +
-       '<td class="num">' + yen(s.total) + '</td>' +
-       '<td class="ctr">' + s.status + '</td>' +
-       '<td class="ctr"><a href="detail.html?id=' + s.id + '">詳細</a></td>' +
-       '</tr>';
+  var h = '<tr><th>No.</th><th>伝票番号</th><th>売上日</th><th>時刻</th><th>レジ</th>' +
+          '<th>担当者</th><th>商品</th><th>点数</th><th>支払方法</th><th>金額（税込）</th><th>区分</th><th>&nbsp;</th></tr>';
+  for (var i = 0; i < view.length; i++) {
+    var s = view[i];
+    var qty = 0;
+    for (var j = 0; j < s.lines.length; j++) qty += s.lines[j].qty;
+    var cls = (i % 2 ? 'even' : '') + (s.status === '返品' ? ' henpin' : '');
+    h += '<tr class="' + cls + '">' +
+         '<td class="num">' + num(start + i + 1) + '</td>' +
+         '<td>' + s.id + '</td>' +
+         '<td>' + s.date + '</td>' +
+         '<td class="ctr">' + s.time + '</td>' +
+         '<td class="ctr">' + s.register + '</td>' +
+         '<td class="ctr">' + s.staff + '</td>' +
+         '<td>' + lineSummary(s) + '</td>' +
+         '<td class="num">' + qty + '</td>' +
+         '<td class="ctr">' + s.payment + '</td>' +
+         '<td class="num">' + yen(s.total) + '</td>' +
+         '<td class="ctr">' + s.status + '</td>' +
+         '<td class="ctr"><a href="detail.html?id=' + s.id + '">詳細</a></td>' +
+         '</tr>';
+  }
+  if (view.length === 0) h += '<tr><td colspan="12" style="text-align:center;padding:20px;color:#888">該当するデータがありません。</td></tr>';
+  document.getElementById('list').innerHTML = h;
 }
-if (view.length === 0) h += '<tr><td colspan="13" style="text-align:center;padding:20px;color:#888">該当するデータがありません。</td></tr>';
-document.getElementById('list').innerHTML = h;
 </script>
 </body>
 </html>
